@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: auto;
+    max-width: 500px;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    width: 100%;
+}
+</style>
+{% endblock head %}
+
+{% block content %}
+<h2 class="text-center">Register as an User</h2>
+<form method="post" class="register-form text-center">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+        {{ form.username }}
+    </div>
+    <div class="form-group">
+        <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+        {{ form.email }}
+    </div>
+    <div class="form-group">
+        <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+        {{ form.password1 }}
+    </div>
+    <div class="form-group">
+        <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+        {{ form.password2 }}
+    </div>
+    <button type="submit" class="btn btn-primary my-3 ">Confirm Registration</button>
+</form>
+<p class="already-registered text-center">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+{% endblock %}

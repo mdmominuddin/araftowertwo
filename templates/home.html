@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <style>
+    body {
+      background-color: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+
+    p {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+      font-size: 1.5rem;
+      padding: 10px 30px;
+    }
+
+    .btn-primary:hover {
+      background-color: #0069d9;
+      border-color: #0062cc;
+    }
+  </style>
+{% endblock head %}
+
+{% block content %}
+  <div class="container mt-4 p-3 text-center ">
+    <h1>Welcome to the Araf Tower-2 Residential Society!</h1>
+    <p>Login to access the system:</p>
+    <a href="/login" class="btn btn-primary">Login</a>
+  </div>
+{% endblock %}
