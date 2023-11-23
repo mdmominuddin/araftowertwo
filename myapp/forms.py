@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
-
+from .models import ExpenseDetails, Deposit
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(
@@ -28,3 +28,20 @@ class UserLoginForm(AuthenticationForm):
             'password': forms.PasswordInput(attrs={'class': 'form-control'}),
         }
 
+class ExpenseDetailsForm(forms.ModelForm):
+    class Meta:
+        model = ExpenseDetails
+        fields = ['date', 'ex_detail', 'ex_head', 'amount', 'remark']
+
+    def __init__(self, *args, **kwargs):
+        super(ExpenseDetailsForm, self).__init__(*args, **kwargs)
+        # You can customize the form widget or add additional logic if needed.
+
+class DepositForm(forms.ModelForm):
+    class Meta:
+        model = Deposit
+        fields = ['date', 'team_member', 'amount', 'fund_head', 'remark']
+
+    def __init__(self, *args, **kwargs):
+        super(DepositForm, self).__init__(*args, **kwargs)
+        # You can customize the form widget or add additional logic if needed.

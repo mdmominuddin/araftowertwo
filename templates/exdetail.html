@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h2>{{ title }}</h2>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Serial</th>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if detailexpense %}
+                            {% for exdetail in detailexpense %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ exdetail.date }}</td>
+                                <td>{{ exdetail.expensedetail }}</td>
+                                <td>{{ exdetail.category }}</td>
+                                <td>{{ exdetail.amount }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <td colspan="4" style="text-align: right;"><strong>Grand Total:</strong></td>
+                                <td><strong>{{ total_amount }}</strong></td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5">No data available</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

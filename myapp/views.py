@@ -1,27 +1,20 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from . forms import UserRegistrationForm, UserLoginForm
+from .forms import UserRegistrationForm, UserLoginForm, ExpenseDetailsForm, DepositForm
+from .models import MonthlySummary, ExpenseDetails, Deposit, SocityMember, ExpenseHead
 from django.contrib import messages
-
+from django.db.models import Sum
 
 # Create your views here.
-
 
 @login_required
 def home(request):
     return render(request, 'homepage.html')
 
-
 def public_home(request):
-    message = "Welcome to BQ Analysis System. This is an application meant to analyze BOQ and make automatic responses. To get access"
-    context = {
-        'message': message
-    }
-    return render(request, 'home.html', context)
-
+    return render(request, 'home.html')
 
 def register(request):
     if request.method == 'POST':
@@ -39,7 +32,6 @@ def register(request):
         form = UserRegistrationForm()
     return render(request, 'registration.html', {'form': form})
 
-
 def user_login(request):
     if request.method == 'POST':
         form = UserLoginForm(data=request.POST)
@@ -51,12 +43,10 @@ def user_login(request):
         form = UserLoginForm()
     return render(request, 'login.html', {'form': form})
 
-
 @login_required
 def user_logout(request):
     logout(request)
     return redirect('login')  # Redirect to the login page after logout
-
 
 def create_deposit(request):
     if request.method == 'POST':
@@ -72,18 +62,16 @@ def create_deposit(request):
 
     return render(request, 'create_deposit.html', {'form': form})
 
-
 def create_expense(request):
     if request.method == 'POST':
-        form = ExpenseForm(request.POST)
+        form = ExpenseDetailsForm(request.POST)
         if form.is_valid():
             expense = form.save()
             return redirect('monthly_summary')
     else:
-        form = ExpenseForm()
+        form = ExpenseDetailsForm()
 
     return render(request, 'create_expense.html', {'form': form})
-
 
 def monthly_summary(request, year=None, month=None):
     if year and month:
@@ -100,19 +88,18 @@ def monthly_summary(request, year=None, month=None):
 
     return render(request, 'monthly_summary.html', context)
 
-
 def category_wise_summary(request):
     # Get all expense categories
-    categories = ExpenseCategory.objects.all()
+    categories = ExpenseHead.objects.all()
 
     # Initialize an empty list to store the summary data
     category_summary = []
 
     for category in categories:
         # Calculate total deposits for the category
-        total_deposits = Deposit.objects.filter(category=category).aggregate(Sum('amount'))['amount__sum'] or 0
+        total_deposits = Deposit.objects.filter(fund_head=category).aggregate(Sum('amount'))['amount__sum'] or 0
         # Calculate total expenses for the category
-        total_expenses = Expense.objects.filter(category=category).aggregate(Sum('amount'))['amount__sum'] or 0
+        total_expenses = ExpenseDetails.objects.filter(ex_head=category).aggregate(Sum('amount'))['amount__sum'] or 0
         # Calculate balance
         balance = total_deposits - total_expenses
         if balance != 0:
@@ -141,9 +128,8 @@ def category_wise_summary(request):
 
     return render(request, 'cat_summary.html', {'category_summary': category_summary})
 
-
 def DetailExpens(request):
-    detailexpense = Expense.objects.all().order_by('date')
+    detailexpense = ExpenseDetails.objects.all().order_by('date')
     total_amount = detailexpense.aggregate(total=Sum('amount'))['total']
 
     context = {
@@ -153,7 +139,6 @@ def DetailExpens(request):
     }
 
     return render(request, 'exdetail.html', context)
-
 
 def DepositDetails(request):
     # Get all contributions and calculate the total fund
@@ -167,7 +152,6 @@ def DepositDetails(request):
         'title': 'Fund Detail',
         'contributionfund': contributionfund,
         'total_fund': total_fund,
-        'contributions_by_member': contributions_by_member,
+        'contributions_by_member': contributions_by
     }
-
     return render(request, 'funddetail.html', context)

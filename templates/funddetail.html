@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h2>{{ title }}</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Summary Section -->
+                    <h3>Summary</h3>
+                    <p>Total Fund: {{ total_fund }}</p>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Team Member</th>
+                                <th>Total Contributions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in contributions_by_member %}
+                            <tr>
+                                <td>{{ member.team_member__name }}</td>
+                                <td>{{ member.total_contributions }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <hr>
+
+                    <!-- Button to toggle Details -->
+                    <button id="toggleDetails" class="btn btn-primary mb-3">See Details</button>
+
+                    <!-- Details Section -->
+                    <div id="detailsSection" style="display: none;">
+                        <h3>Details</h3>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Team Member</th>
+                                    <th>Amount</th>
+                                    <th>Category</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for deposit in contributionfund %}
+                                <tr>
+                                    <td>{{ deposit.date }}</td>
+                                    <td>{{ deposit.team_member }}</td>
+                                    <td>{{ deposit.amount }}</td>
+                                    <td>{{ deposit.category }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <!-- Total Row -->
+                        <table class="table table-striped">
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2"></td>
+                                    <td><strong>Total:</strong></td>
+                                    <td><strong>{{ total_amount }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("toggleDetails").addEventListener("click", function() {
+        var detailsSection = document.getElementById("detailsSection");
+        if (detailsSection.style.display === "none" || detailsSection.style.display === "") {
+            detailsSection.style.display = "block";
+        } else {
+            detailsSection.style.display = "none";
+        }
+    });
+</script>
+
+{% endblock %}
