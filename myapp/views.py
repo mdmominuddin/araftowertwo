@@ -32,6 +32,29 @@ def register(request):
         form = UserRegistrationForm()
     return render(request, 'registration.html', {'form': form})
 
+
+def Member(request):
+    members = SocityMember.objects.all()
+
+    member_info = []
+
+    for member in members:
+        member_name = member.name
+        member_deposits = Deposit.objects.filter(team_member=member)
+        deposit_link = f"/deposits/{member.id}"  # Change the URL pattern as needed
+
+        member_info.append({
+            'name': member_name,
+            'deposit_link': deposit_link,
+        })
+
+    context = {
+        'member_info': member_info,
+    }
+
+    return render(request, 'member_list.html', context)
+
+
 def user_login(request):
     if request.method == 'POST':
         form = UserLoginForm(data=request.POST)

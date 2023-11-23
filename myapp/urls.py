@@ -13,5 +13,6 @@ urlpatterns = [
     path('category-wise-summary/', views.category_wise_summary, name='category_wise_summary'),
     path('expense-detail/', views.DetailExpens, name='expense_detail'),
     path('deposit-detail/', views.DepositDetails, name='deposit_detail'),
+    path('members/', Member, name='member_list'),
     # Add other URLs for your app as needed
 ]
