@@ -1,0 +1,181 @@
+<!-- report.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4 p-5">
+    <h2>Financial Report</h2>
+    <hr>
+
+    <table class="table table-bordered mt-4">
+        <thead>
+            <tr>
+                <th>Expense Head</th>
+                <th>Total All-Time Expenses (Tk.)</th>
+                <th>Total All-Time Deposits (Tk.)</th>
+                <th>Present Fund State (Tk.)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detail in expense_head_details %}
+                <tr>
+                    <td>{{ detail.head_name }}</td>
+                    <td>{{ detail.total_all_time_expenses }}</td>
+                    <td>{{ detail.total_all_time_deposits }}</td>
+                    <td>{{ detail.present_fund_state }}</td>
+                </tr>
+            {% endfor %}
+
+            <!-- Grand Total Row -->
+            <tr>
+                <td><strong>Grand Total</strong></td>
+                <td><strong>{{ grand_total_expenses }}</strong></td>
+                <td><strong>{{ grand_total_deposits }}</strong></td>
+                <td><strong>{{ grand_total_fund_state }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+    <br>
+
+
+    <h2>Summary of Fund State</h2>
+    <hr>
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h2>{{ title }}</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Summary Section -->
+                    <h3>Summary</h3>
+                    <p>Total Fund: {{ total_fund }}</p>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Team Member</th>
+                                <th>Total Contributions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in fund_by_member %}
+                            <tr>
+                                <td>{{ member.team_member__name }}</td>
+                                <td>{{ member.total_contributions }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <hr>
+
+                    <!-- Button to toggle Details -->
+                    <button id="toggleDetails" class="btn btn-primary mb-3">See Details</button>
+
+                    <!-- Details Section -->
+                    <div id="detailsSection" style="display: none;">
+                        <h3>Details</h3>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Team Member</th>
+                                    <th>Amount</th>
+                                    <th>Category</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for deposit in fund %}
+                                <tr>
+                                    <td>{{ deposit.date }}</td>
+                                    <td>{{ deposit.team_member }}</td>
+                                    <td>{{ deposit.amount }}</td>
+                                    <td>{{ deposit.category }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <!-- Total Row -->
+                        <table class="table table-striped">
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2"></td>
+                                    <td><strong>Total:</strong></td>
+                                    <td><strong>{{ total_amount }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <br>
+    <br>
+    <h2>Detail of Fund of each member</h2>
+<hr>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Serial</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Remark</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fund_detail in fund %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ fund_detail.date }}</td>
+                <td>{{ fund_detail.amount }}</td>
+                <td>{{ fund_detail.remark }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>All-time Expenses Detail</h2>
+    <hr>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Expense Detail</th>
+                <th>Amount (Tk.)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Add rows for all-time expenses detail -->
+        </tbody>
+    </table>
+
+    <h2>Consolidated Summary Monthly</h2>
+    <hr>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Total Deposits (Tk.)</th>
+                <th>Total Expenses (Tk.)</th>
+                <th>Present Balance (Tk.)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Add rows for consolidated summary monthly -->
+        </tbody>
+    </table>
+</>
+{% endblock %}

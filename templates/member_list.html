@@ -6,16 +6,28 @@
     <h2>Member List</h2>
     <hr>
 
-    {% for member in member_info %}
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">{{ member.name }}</h5>
-                <p class="card-text">
-                    <a href="{{ member.deposit_link }}" class="btn btn-primary">View Deposits</a>
-                </p>
-            </div>
-        </div>
-    {% endfor %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Serial</th>
+                <th>Name</th>
+                <th>Designation</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in members %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ member.name }}</td>
+                    <td>{{ member.society_designation }}</td>
+                    <td>{{ member.email }}</td>
+                    <td>{{ member.phone_number }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
 </div>
 {% endblock %}

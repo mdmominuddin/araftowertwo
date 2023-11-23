@@ -7,14 +7,17 @@ from .models import MonthlySummary, ExpenseDetails, Deposit, SocityMember, Expen
 from django.contrib import messages
 from django.db.models import Sum
 
+
 # Create your views here.
 
 @login_required
 def home(request):
     return render(request, 'homepage.html')
 
+
 def public_home(request):
     return render(request, 'home.html')
+
 
 def register(request):
     if request.method == 'POST':
@@ -36,20 +39,8 @@ def register(request):
 def Member(request):
     members = SocityMember.objects.all()
 
-    member_info = []
-
-    for member in members:
-        member_name = member.name
-        member_deposits = Deposit.objects.filter(team_member=member)
-        deposit_link = f"/deposits/{member.id}"  # Change the URL pattern as needed
-
-        member_info.append({
-            'name': member_name,
-            'deposit_link': deposit_link,
-        })
-
     context = {
-        'member_info': member_info,
+        'members': members,
     }
 
     return render(request, 'member_list.html', context)
@@ -66,10 +57,12 @@ def user_login(request):
         form = UserLoginForm()
     return render(request, 'login.html', {'form': form})
 
+
 @login_required
 def user_logout(request):
     logout(request)
     return redirect('login')  # Redirect to the login page after logout
+
 
 def create_deposit(request):
     if request.method == 'POST':
@@ -85,6 +78,7 @@ def create_deposit(request):
 
     return render(request, 'create_deposit.html', {'form': form})
 
+
 def create_expense(request):
     if request.method == 'POST':
         form = ExpenseDetailsForm(request.POST)
@@ -95,6 +89,7 @@ def create_expense(request):
         form = ExpenseDetailsForm()
 
     return render(request, 'create_expense.html', {'form': form})
+
 
 def monthly_summary(request, year=None, month=None):
     if year and month:
@@ -110,6 +105,65 @@ def monthly_summary(request, year=None, month=None):
     }
 
     return render(request, 'monthly_summary.html', context)
+
+
+# views.py
+from django.shortcuts import render
+from .models import MonthlySummary, ExpenseDetails, Deposit
+
+# views.py
+from django.shortcuts import render
+from .models import ExpenseHead, ExpenseDetails, Deposit
+
+
+def Report(request):
+    members = SocityMember.objects.all()
+    expense_heads = ExpenseHead.objects.all()
+    expenses = ExpenseDetails.objects.all()
+    deposits = Deposit.objects.all().order_by('date')
+    fund = Deposit.objects.values('team_member__name', 'amount').order_by('team_member__name')
+    total_fund = deposits.aggregate(total=Sum("amount"))['total']
+    fund_by_member = Deposit.objects.values('team_member__name').annotate(total_contributions=Sum('amount'))
+    expense_head_details = []
+
+    for head in expense_heads:
+        head_name = head.name
+
+        # Calculate all-time expenses for each expense head
+        total_all_time_expenses = sum(expense.amount for expense in expenses.filter(ex_head=head))
+
+        # Calculate all-time deposits for each expense head
+        total_all_time_deposits = sum(deposit.amount for deposit in deposits.filter(fund_head=head))
+
+        # Calculate present fund state for each expense head
+        present_fund_state = total_all_time_deposits - total_all_time_expenses
+
+        expense_head_details.append({
+            'head_name': head_name,
+            'total_all_time_expenses': total_all_time_expenses,
+            'total_all_time_deposits': total_all_time_deposits,
+            'present_fund_state': present_fund_state,
+
+        })
+
+    # Calculate Grand Totals
+    grand_total_expenses = sum(detail['total_all_time_expenses'] for detail in expense_head_details)
+    grand_total_deposits = sum(detail['total_all_time_deposits'] for detail in expense_head_details)
+    grand_total_fund_state = sum(detail['present_fund_state'] for detail in expense_head_details)
+
+    context = {
+        'expense_head_details': expense_head_details,
+        'grand_total_expenses': grand_total_expenses,
+        'grand_total_deposits': grand_total_deposits,
+        'grand_total_fund_state': grand_total_fund_state,
+        'fund': fund,
+        'total_fund': total_fund,
+        'fund_by_member': fund_by_member,
+        'members': members,
+    }
+
+    return render(request, 'report.html', context)
+
 
 def category_wise_summary(request):
     # Get all expense categories
@@ -151,6 +205,7 @@ def category_wise_summary(request):
 
     return render(request, 'cat_summary.html', {'category_summary': category_summary})
 
+
 def DetailExpens(request):
     detailexpense = ExpenseDetails.objects.all().order_by('date')
     total_amount = detailexpense.aggregate(total=Sum('amount'))['total']
@@ -162,6 +217,7 @@ def DetailExpens(request):
     }
 
     return render(request, 'exdetail.html', context)
+
 
 def DepositDetails(request):
     # Get all contributions and calculate the total fund

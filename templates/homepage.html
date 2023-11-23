@@ -1,17 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="container mt-5">
-    <h2 class="text-center mb-4">Welcome to the Araf Tower-2 Residential Society!</h2>
-    <p class="text-center">Dear Residents and Members,</p> <br><br>
-    <p class="text-center">We are delighted to welcome you to the Araf Tower-2 Residential Society Portal, your centralized hub for managing funds, expenses, and utilities. This platform has been designed with the aim of enhancing communication, transparency, and convenience within our vibrant community.</p>
+  <div class="container mt-5" style="margin-top: 50px;">
+    <h2 class="text-center mb-4" style="font-size: 36px;">Welcome to the Araf Tower-2 Residential Society!</h2>
+    <p class="text-center">Dear Residents and Members,</p>
+    <p class="text-center" style="padding: 20px;">We are delighted to welcome you to the Araf Tower-2 Residential Society Portal, your centralized hub for managing funds, expenses, and utilities. This platform has been designed with the aim of enhancing communication, transparency, and convenience within our vibrant community.</p>
   </div>
-  <div class="container row mt-5">
+
+  <div class="container row mt-5 text-center">
     <div class="col-md-6 text-center mb-4">
-      <a href="{% url 'deposit' %}" class="btn btn-primary btn-lg">Deposit</a>
-    </div>
-    <div class="col-md-6 text-center">
-      <a href="{% url 'expense' %}" class="btn btn-danger btn-lg">Expense</a>
+      <a href="{% url 'deposit' %}" class="btn btn-primary btn-lg" style="background-color: #007bff; border-color: #007bff; margin-right: 10px;">Deposit</a>
+
+      <a href="{% url 'expense' %}" class="btn btn-danger btn-lg" style="background-color: #dc3545; border-color: #dc3545;">Expense</a>
     </div>
   </div>
+
+  <!-- Footer Section -->
+  <footer class="footer mt-5 bg-dark text-white p-4" style="background-color: #343a40; color: #fff; padding: 20px;">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <p>&copy; Copyright Momin</p>
+          <p>Email: momin.9108@gmail.com</p>
+          <!-- Add more contact information or details as needed -->
+        </div>
+        <div class="col-md-6 text-right">
+          <a href="{% url 'admin:index' %}" class="btn btn-info">Admin Login</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 {% endblock %}

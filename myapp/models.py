@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 class SocityMember(models.Model):
     name = models.CharField(max_length=255)
+    society_designation = models.CharField(max_length=255, default="General Member")
     email = models.EmailField()
     phone_number = models.CharField(max_length=15)
 
