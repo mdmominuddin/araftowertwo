@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SocityMember, MonthlySummary, ExpenseHead, ExpenseDetails, Deposit
+from .models import SocityMember, MonthlySummary, ExpenseHead, ExpenseDetails, Deposit, DueDeposit
 
 class SocityMemberAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone_number')
@@ -35,3 +35,4 @@ class DepositAdmin(admin.ModelAdmin):
     fund_head_name.short_description = 'Fund Head'
 
 admin.site.register(Deposit, DepositAdmin)
+admin.site.register(DueDeposit)

@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import ReportView
 
 urlpatterns = [
     path('', views.public_home, name='home'),
@@ -14,6 +15,8 @@ urlpatterns = [
     path('expense-detail/', views.DetailExpens, name='expense_detail'),
     path('deposit-detail/', views.DepositDetails, name='deposit_detail'),
     path('members/', views.Member, name='member_list'),
-    path('report/', views.Report, name='report'),
+    path('report/', ReportView.as_view(), name='report'),  # Updated for ReportView
+    path('individual_contributions/<int:member_id>/', ReportView.as_view(), name='individual_contributions'),  # Added for individual contributions
     # Add other URLs for your app as needed
 ]
+

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Contribution Report{% endblock %}
+{% block title %}Individual Contributions - {{ member.name }}{% endblock %}
 
 {% block content %}
     <style>
@@ -46,53 +46,35 @@
     </style>
 
     <div class="container mt-4 mb-4">
-        <h1 class="mt-4 mb-4">Contribution Report</h1>
+        <h1 class="text-center">Individual Contributions - {{ member.name }}</h1>
 
         <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover mt-4">
+            <table class="table table-bordered table-striped mt-4">
                 <thead class="thead-dark">
                     <tr>
-                        <th>Serial</th>
-                        <th>Member Name</th>
-                        <th>Total Deposited</th>
-                        <th>Detail of Deposition</th>
-                        <th>Due/Advance</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <!-- Add more headers as needed -->
                     </tr>
                 </thead>
                 <tbody>
-    {% for contribution in contributions %}
-        {% with due_advance=total_due_amount %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ contribution.member.name }}</td>
-            <td>${{ contribution.total_deposits|floatformat:2 }}</td>
-            <td>
-                <a href="?member_id={{ contribution.member.id }}" class="btn btn-info btn-sm">
-                    See Details
-                </a>
-            </td>
-            <td style="color:
-                {% if contribution.due_after_deposit > 0 %}
-                    red;
-                {% elif contribution.due_after_deposit < 0 %}
-                    green;
-                {% else %}
-                    black; /* or any other color for 'up-to-date' */
-                {% endif %}">
-                {{ contribution.due_after_deposit|floatformat:2 }}
-            </td>
-
-        </tr>
-        {% endwith %}
-    {% endfor %}
-    <tr class="table-info">
-        <td colspan="2"><strong>Total</strong></td>
-        <td><strong>${{ total_contributions }}</strong></td>
-        <td colspan="2"></td>
-    </tr>
-</tbody>
-
-
+                    {% with total_individual=0 %}
+                        {% for deposit in deposits %}
+                            <tr>
+                                <td>{{ deposit.date }}</td>
+                                <td>${{ deposit.amount }}</td>
+                                <!-- Add more cells as needed -->
+                            </tr>
+                            {% with total_individual=total_individual|add:deposit.amount %}
+                        {% endwith %}
+                        {% endfor %}
+                        <tr class="table-info">
+                            <td><strong>Total</strong></td>
+                            <td><strong>${{ total_individual }}</strong></td>
+                            <!-- Add more cells as needed -->
+                        </tr>
+                    {% endwith %}
+                </tbody>
             </table>
         </div>
 

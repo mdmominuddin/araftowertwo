@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--d%aej4)x%hexa!1&@tkepr)phmw2*o*6$2z@rk)m_k)dj&__y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["arafatowertwo.onrender.com"]
+# ALLOWED_HOSTS = ["arafatowertwo.onrender.com"]
 
 
 # Application definition
@@ -38,6 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp',
+    'bootstrap5',
+    'crispy_forms',
+    'widget_tweaks',
+    'django_filters',
+
+
+
 ]
 
 MIDDLEWARE = [

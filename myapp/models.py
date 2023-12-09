@@ -64,3 +64,12 @@ class Deposit(models.Model):
 
     def __str__(self):
         return f"{self.team_member.name} - {self.date.strftime('%d-%m-%Y')}"
+
+class DueDeposit(models.Model):
+    date = models.DateField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    @classmethod
+    def get_total_due_amount(cls):
+        total_due_amount = cls.objects.aggregate(models.Sum('amount'))['amount__sum'] or 0
+        return total_due_amount

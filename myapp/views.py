@@ -1,15 +1,47 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegistrationForm, UserLoginForm, ExpenseDetailsForm, DepositForm
-from .models import MonthlySummary, ExpenseDetails, Deposit, SocityMember, ExpenseHead
 from django.contrib import messages
 from django.db.models import Sum
+from .forms import UserRegistrationForm, UserLoginForm, ExpenseDetailsForm, DepositForm
+from .models import MonthlySummary, ExpenseDetails, Deposit, SocityMember, ExpenseHead, DueDeposit
+from datetime import datetime
+from django.views import View
+from django.http import HttpResponse
+
+# Authentication Views
+def register(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Registration successful. You are now logged in.")
+            return redirect('login')
+    else:
+        form = UserRegistrationForm()
+    return render(request, 'registration.html', {'form': form})
 
 
-# Create your views here.
+def user_login(request):
+    if request.method == 'POST':
+        form = UserLoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('homepage')
+    else:
+        form = UserLoginForm()
+    return render(request, 'login.html', {'form': form})
 
+
+@login_required
+def user_logout(request):
+    logout(request)
+    return redirect('login')
+
+
+# Homepage Views
 @login_required
 def home(request):
     return render(request, 'homepage.html')
@@ -19,51 +51,15 @@ def public_home(request):
     return render(request, 'home.html')
 
 
-def register(request):
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            # Log the user in after registration
-            login(request, user)
-
-            # Add a success message
-            messages.success(request, "Registration successful. You are now logged in.")
-
-            return redirect('login')  # Redirect to your home page
-    else:
-        form = UserRegistrationForm()
-    return render(request, 'registration.html', {'form': form})
-
-
+# Member Views
 def Member(request):
     members = SocityMember.objects.all()
-
-    context = {
-        'members': members,
-    }
-
+    context = {'members': members}
     return render(request, 'member_list.html', context)
 
 
-def user_login(request):
-    if request.method == 'POST':
-        form = UserLoginForm(data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect('homepage')  # Redirect to your home page
-    else:
-        form = UserLoginForm()
-    return render(request, 'login.html', {'form': form})
-
-
+# Deposit and Expense Views
 @login_required
-def user_logout(request):
-    logout(request)
-    return redirect('login')  # Redirect to the login page after logout
-
-
 def create_deposit(request):
     if request.method == 'POST':
         form = DepositForm(request.POST)
@@ -75,7 +71,6 @@ def create_deposit(request):
             messages.error(request, 'Error: Please correct the form.')
     else:
         form = DepositForm()
-
     return render(request, 'create_deposit.html', {'form': form})
 
 
@@ -87,10 +82,11 @@ def create_expense(request):
             return redirect('monthly_summary')
     else:
         form = ExpenseDetailsForm()
-
     return render(request, 'create_expense.html', {'form': form})
 
 
+# Monthly Summary Views
+@login_required
 def monthly_summary(request, year=None, month=None):
     if year and month:
         summaries = MonthlySummary.objects.filter(month__year=year, month__month=month)
@@ -99,90 +95,22 @@ def monthly_summary(request, year=None, month=None):
         summaries = MonthlySummary.objects.all()
         title = "Overall Monthly Summary"
 
-    context = {
-        'title': title,
-        'summaries': summaries,
-    }
-
+    context = {'title': title, 'summaries': summaries}
     return render(request, 'monthly_summary.html', context)
 
 
-# views.py
-from django.shortcuts import render
-from .models import MonthlySummary, ExpenseDetails, Deposit
-
-# views.py
-from django.shortcuts import render
-from .models import ExpenseHead, ExpenseDetails, Deposit
-
-
-def Report(request):
-    members = SocityMember.objects.all()
-    expense_heads = ExpenseHead.objects.all()
-    expenses = ExpenseDetails.objects.all()
-    deposits = Deposit.objects.all().order_by('date')
-    fund = Deposit.objects.values('team_member__name', 'amount').order_by('team_member__name')
-    total_fund = deposits.aggregate(total=Sum("amount"))['total']
-    fund_by_member = Deposit.objects.values('team_member__name').annotate(total_contributions=Sum('amount'))
-    expense_head_details = []
-
-    for head in expense_heads:
-        head_name = head.name
-
-        # Calculate all-time expenses for each expense head
-        total_all_time_expenses = sum(expense.amount for expense in expenses.filter(ex_head=head))
-
-        # Calculate all-time deposits for each expense head
-        total_all_time_deposits = sum(deposit.amount for deposit in deposits.filter(fund_head=head))
-
-        # Calculate present fund state for each expense head
-        present_fund_state = total_all_time_deposits - total_all_time_expenses
-
-        expense_head_details.append({
-            'head_name': head_name,
-            'total_all_time_expenses': total_all_time_expenses,
-            'total_all_time_deposits': total_all_time_deposits,
-            'present_fund_state': present_fund_state,
-
-        })
-
-    # Calculate Grand Totals
-    grand_total_expenses = sum(detail['total_all_time_expenses'] for detail in expense_head_details)
-    grand_total_deposits = sum(detail['total_all_time_deposits'] for detail in expense_head_details)
-    grand_total_fund_state = sum(detail['present_fund_state'] for detail in expense_head_details)
-
-    context = {
-        'expense_head_details': expense_head_details,
-        'grand_total_expenses': grand_total_expenses,
-        'grand_total_deposits': grand_total_deposits,
-        'grand_total_fund_state': grand_total_fund_state,
-        'fund': fund,
-        'total_fund': total_fund,
-        'fund_by_member': fund_by_member,
-        'members': members,
-    }
-
-    return render(request, 'report.html', context)
-
-
+# Category-wise Summary Views
 def category_wise_summary(request):
-    # Get all expense categories
     categories = ExpenseHead.objects.all()
-
-    # Initialize an empty list to store the summary data
     category_summary = []
 
     for category in categories:
-        # Calculate total deposits for the category
         total_deposits = Deposit.objects.filter(fund_head=category).aggregate(Sum('amount'))['amount__sum'] or 0
-        # Calculate total expenses for the category
         total_expenses = ExpenseDetails.objects.filter(ex_head=category).aggregate(Sum('amount'))['amount__sum'] or 0
-        # Calculate balance
         balance = total_deposits - total_expenses
         if balance != 0:
             balance += balance
 
-        # Append the category-wise summary to the list
         category_summary.append({
             'category_name': category.name,
             'total_deposits': total_deposits,
@@ -190,12 +118,10 @@ def category_wise_summary(request):
             'balance': balance,
         })
 
-    # Calculate the grand total
     grand_total_deposits = sum(item['total_deposits'] for item in category_summary)
     grand_total_expenses = sum(item['total_expenses'] for item in category_summary)
     grand_balance = grand_total_deposits - grand_total_expenses
 
-    # Append the grand total to the category-wise summary list
     category_summary.append({
         'category_name': 'Grand Total',
         'total_deposits': grand_total_deposits,
@@ -206,31 +132,187 @@ def category_wise_summary(request):
     return render(request, 'cat_summary.html', {'category_summary': category_summary})
 
 
+# Expense Detail Views
 def DetailExpens(request):
     detailexpense = ExpenseDetails.objects.all().order_by('date')
     total_amount = detailexpense.aggregate(total=Sum('amount'))['total']
 
-    context = {
-        'title': 'Expense Detail',
-        'detailexpense': detailexpense,
-        'total_amount': total_amount,
-    }
-
+    context = {'title': 'Expense Detail', 'detailexpense': detailexpense, 'total_amount': total_amount}
     return render(request, 'exdetail.html', context)
 
 
+# Fund Detail Views
 def DepositDetails(request):
-    # Get all contributions and calculate the total fund
     contributionfund = Deposit.objects.all().order_by('date')
     total_fund = contributionfund.aggregate(total=Sum("amount"))['total']
-
-    # Get contributions grouped by members and calculate their total contributions
     contributions_by_member = Deposit.objects.values('team_member__name').annotate(total_contributions=Sum('amount'))
 
     context = {
         'title': 'Fund Detail',
         'contributionfund': contributionfund,
         'total_fund': total_fund,
-        'contributions_by_member': contributions_by
+        'contributions_by_member': contributions_by_member
     }
     return render(request, 'funddetail.html', context)
+
+
+# Report Views
+from django.db.models import Sum, F
+
+
+# def report_view(request):
+#     if request.method == 'GET':
+#         from_date = request.GET.get('from_date')
+#         to_date = request.GET.get('to_date')
+#
+#         if from_date and to_date:
+#             from_date = datetime.strptime(from_date, "%Y-%m-%d").date()
+#             to_date = datetime.strptime(to_date, "%Y-%m-%d").date()
+#             deposits = Deposit.objects.filter(date__range=(from_date, to_date))
+#         else:
+#             deposits = Deposit.objects.all()
+#
+#         members = SocityMember.objects.all()
+#         contributions = []
+#
+#         total_contributions = 0
+#
+#         for member in members:
+#             total_deposits = deposits.filter(team_member=member).aggregate(Sum('amount'))['amount__sum'] or 0
+#             depositbymems = deposits.filter(team_member=member)
+#
+#             total_contributions += total_deposits
+#             total_by f"{member}" += depositbymems
+#
+#             contribution = {
+#                 'member': member,
+#                 'total_deposits': total_deposits,
+#                 'depositbymems': depositbymems,
+#             }
+#
+#             contributions.append(contribution)
+#
+#         return render(request, 'report.html',
+#                       {'contributions': contributions, 'total_contributions': total_contributions})
+#
+#     return HttpResponse("Invalid request method")
+
+# def report_view(request):
+#     if request.method == 'GET':
+#         from_date = request.GET.get('from_date')
+#         to_date = request.GET.get('to_date')
+#
+#         if from_date and to_date:
+#             from_date = datetime.strptime(from_date, "%Y-%m-%d").date()
+#             to_date = datetime.strptime(to_date, "%Y-%m-%d").date()
+#             deposits = Deposit.objects.filter(date__range=(from_date, to_date))
+#         else:
+#             deposits = Deposit.objects.all()
+#
+#         members = SocityMember.objects.all()
+#         contributions = []
+#
+#         total_contributions = 0
+#         total_by_member = {}
+#
+#         for member in members:
+#             total_deposits = deposits.filter(team_member=member).aggregate(Sum('amount'))['amount__sum'] or 0
+#             depositbymems = deposits.filter(team_member=member)
+#
+#             total_contributions += total_deposits
+#             total_by_member[str(member)] = depositbymems  # Using the member name as the key
+#
+#             contribution = {
+#                 'member': member,
+#                 'total_deposits': total_deposits,
+#                 'depositbymems': depositbymems,
+#             }
+#
+#             contributions.append(contribution)
+#
+#         return render(request, 'report.html',
+#                       {'contributions': contributions, 'total_contributions': total_contributions,
+#                        'total_by_member': total_by_member})
+#
+#     return HttpResponse("Invalid request method")
+
+from django.shortcuts import render, get_object_or_404
+from django.views import View
+from django.db.models import Sum
+from datetime import datetime
+from .models import SocityMember, Deposit, DueDeposit
+
+class ReportView(View):
+    template_name = 'report.html'
+    individual_contributions_template = 'individual_contributions.html'
+
+    def get(self, request):
+        from_date = request.GET.get('from_date')
+        to_date = request.GET.get('to_date')
+        member_id = request.GET.get('member_id')
+
+        if member_id:
+            return self.render_individual_contributions(request, member_id)
+
+        deposits = self.get_filtered_deposits(from_date, to_date)
+        members = SocityMember.objects.all()
+        total_due_amount = DueDeposit.get_total_due_amount()
+
+        total_contributions, total_by_member, contributions = self.calculate_totals(deposits, members)
+
+        return render(request, self.template_name, {
+            'contributions': contributions,
+            'total_contributions': total_contributions,
+            'total_by_member': total_by_member,
+            'total_due_amount': total_due_amount
+        })
+
+    def render_individual_contributions(self, request, member_id):
+        member = get_object_or_404(SocityMember, id=member_id)
+        deposits = Deposit.objects.filter(team_member=member)
+
+        context = {
+            'member': member,
+            'deposits': deposits,
+        }
+
+        return render(request, self.individual_contributions_template, context)
+
+    def get_filtered_deposits(self, from_date, to_date):
+        deposits = Deposit.objects.all()
+
+        if from_date and to_date:
+            from_date = datetime.strptime(from_date, "%Y-%m-%d").date()
+            to_date = datetime.strptime(to_date, "%Y-%m-%d").date()
+            deposits = deposits.filter(date__range=(from_date, to_date))
+
+        return deposits
+
+    def calculate_totals(self, deposits, members):
+        total_contributions = 0
+        total_by_member = {}
+        contributions = []
+        total_due_amount = DueDeposit.get_total_due_amount()
+
+        for member in members:
+            member_deposits = deposits.filter(team_member=member)
+            total_deposits = member_deposits.aggregate(Sum('amount'))['amount__sum'] or 0
+
+            total_contributions += total_deposits
+            total_by_member[str(member)] = member_deposits
+
+            # Calculate the due after deposit
+            due_after_deposit = total_due_amount - total_deposits
+
+            contribution = {
+                'member': member,
+                'total_deposits': total_deposits,
+                'depositbymems': member_deposits,
+                'due_after_deposit': due_after_deposit,  # Add this line
+            }
+
+            contributions.append(contribution)
+
+        return total_contributions, total_by_member, contributions
+
+
